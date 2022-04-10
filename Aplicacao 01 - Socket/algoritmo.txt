@@ -1,0 +1,17 @@
+On initialization
+state := RELEASED;
+To enter the section state := WANTED;
+Multicast request to all processes;
+T := request’s timestamp;
+Wait until (number of replies received = (N – 1));
+state := HELD;
+On receipt of a request <Ti, pi> at pj (i ≠ j)
+if (state = HELD or (state = WANTED and (T, pj) < (Ti, pi)))
+then
+queue request from pi without replying;
+else
+reply immediately to pi;
+end if
+To exit the critical section
+state := RELEASED;
+reply to any queued requests;

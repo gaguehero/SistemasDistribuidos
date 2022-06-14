@@ -1,0 +1,53 @@
+<body>
+    <h1> Python Fetch Example</h1>
+    <p id='embed'>{{embed}}</p>
+    <div id='mylog'></div>
+    <button onclick="testePost(1)">Requisita Recurso 1</button>
+    <button onclick="testePost(2)">Requisita Recurso 2</button>
+<script>
+    var id = Math.floor(Math.random()*1000)
+    canal = "/stream?channel=recurso"+id
+    console.log(canal)
+    console.log("{{ url_for('sse.stream', channel= 'canal') }}")
+    var source = new EventSource(canal);
+    source.addEventListener('autorizacao', function(event) {
+        console.log(event.data)
+        var data = JSON.parse(event.data);
+        alert("The server says " + data.message);
+    }, false);
+    source.addEventListener('error', function(event) {
+        alert("Failed to connect to event stream. Is Redis running?");
+    }, false);
+
+
+    fetch('/test')
+      .then(function (response) {
+          return response.json();
+      }).then(function (text) {
+          console.log('GET response:');
+          console.log(text.greeting); 
+      });
+    var index = 33;
+    fetch(`/getdata/${index}`)
+      .then(function (response) {
+          return response.text();
+      }).then(function (text) {
+          console.log('GET response text:');
+          console.log(text); 
+      });
+    function testePost(recursoVal){
+        url = `http://127.0.0.1:5000/test`
+        let xhr = new XMLHttpRequest()
+        urlMod = url + '?' +'id=' + id + '&' + 'recurso=' + recursoVal
+        console.log(urlMod)
+        xhr.open('POST',urlMod)
+        xhr.send()
+        xhr.onload = function (){
+            let check = document.getElementById('mylog')
+            let pi = document.createElement('p')
+            pi.innerText = xhr.response
+            check.appendChild(pi)
+        }
+    }
+</script>
+    <body>

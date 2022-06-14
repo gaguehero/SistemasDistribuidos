@@ -1,0 +1,93 @@
+<html>
+    <head>
+        <style type="text/css">
+            .released{
+                color: green;
+            }
+            .held{
+                color: red;
+            }
+            .wanted{
+                color: yellow;
+            }
+        </style>
+    </head>
+    <body>
+        <h1>Aplicação 3 - Serviço Web (REST)</h1>
+        <h2 id="meuId"></h2>
+        <button onclick="requestRec(0)">Requisita Recurso 1</button>
+        <button onclick="freeRec(0)">Libera Recurso 1</button>
+        <br>
+        <button onclick="requestRec(1)">Requisita Recurso 2</button>
+        <button onclick="freeRec(1)">Libera Recurso 2</button>
+        <h3 id="recurso1"></h3>
+        <h3 id="recurso2"></h3>
+        <script>
+
+            function requestRec(recurso){
+                let recursoId = "recurso" + (recurso+1)
+                console.log(recursoId)
+                let recursoHtml = document.getElementById(recursoId)
+                if(recursoHtml.innerHTML == 'RELEASED'){
+                    let url = `http://127.0.0.1:5000/sub`
+                    let xhr = new XMLHttpRequest()
+                    let urlMod = url + '?' +'id=' + id + '&' + 'recurso=' + recurso
+                    console.log(urlMod)
+                    xhr.open('POST',urlMod)
+                    xhr.send()
+                    xhr.onload = function (){
+                        console.log(xhr.response)
+                    }
+                    recursoHtml.innerHTML = 'WANTED'
+                    recursoHtml.classList.remove('released')
+                    recursoHtml.classList.add('wanted')
+                }
+                else{
+                    alert(`O Recurso ${recurso+1} já foi requisitado!`)
+                }
+            }
+            function freeRec(recurso){
+                let recursoId = "recurso" + (recurso+1)
+                let recursoHtml = document.getElementById(recursoId)
+                if(recursoHtml.innerHTML == 'HELD'){
+                    let url = `http://127.0.0.1:5000/release`
+                    let xhr = new XMLHttpRequest()
+                    let urlMod = url + '?' +'id=' + id + '&' + 'recurso=' + recurso
+                    console.log(urlMod)
+                    xhr.open('POST',urlMod)
+                    xhr.send()
+                    xhr.onload = function (){
+                        console.log(xhr.response)
+                    }
+                    recursoHtml.innerHTML = 'RELEASED'
+                    recursoHtml.classList.remove('held')
+                    recursoHtml.classList.add('released')
+                }
+                else{
+                    alert(`O Recurso ${recurso+1} não está em uso!`)
+                }
+            }
+
+            id = Math.floor(Math.random()*1000)
+            canal = "/stream?channel=recurso"+id
+            document.getElementById("meuId").innerHTML= "Meu ID: " + id
+            rec1 = document.getElementById('recurso1')
+            rec1.innerHTML = 'RELEASED'
+            rec1.classList.add('released')
+            rec2 = document.getElementById('recurso2')
+            rec2.innerHTML = 'RELEASED'
+            rec2.classList.add('released')
+            var source = new EventSource(canal)
+            source.addEventListener('autorizacao', function(event) {
+                var data = JSON.parse(event.data)
+                console.log(data.message)
+                recurso = data.recurso
+                let recursoId = "recurso" + (recurso+1)
+                let recursoHtml = document.getElementById(recursoId)
+                recursoHtml.innerHTML = 'HELD'
+                recursoHtml.classList.remove('wanted')
+                    recursoHtml.classList.add('held')
+            }, false)
+        </script>
+    </body>
+</html>
